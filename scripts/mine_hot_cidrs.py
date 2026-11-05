@@ -53,7 +53,7 @@ def test_ip(ip, check_api_url, timeout=5.0):
     return None
 
 def main():
-    check_api_url = "https://proxyip.xxxxxxx.nyc.mn/check"
+    check_api_url = "https://cloudflarenb-pagesip.pages.dev/check"
     cidrs = load_cf_cidrs("ip.txt")
     if not cidrs:
         print("No CIDRs found in ip.txt")
