@@ -53,7 +53,9 @@ def test_ip(ip, check_api_url, timeout=5.0):
     return None
 
 def main():
-    check_api_url = os.environ.get("CHECK_API_URL", "").strip().removesuffix("?proxyip=").removesuffix("?proxyip").rstrip("?&")
+    _check_host = os.environ.get("CHECK_API_URL", "").strip().removeprefix("https://").removeprefix("http://").removesuffix("?proxyip=").removesuffix("?proxyip")
+    _check_host = _check_host.split("/")[0].strip()
+    check_api_url = f"https://{_check_host}/check" if _check_host else ""
     if not check_api_url:
         print("Error: CHECK_API_URL is not set (configure it in repository Secrets). Aborting.")
         exit(1)
