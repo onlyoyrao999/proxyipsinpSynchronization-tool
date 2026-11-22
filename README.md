@@ -21,6 +21,25 @@
 
 配置好后，你可以点击仓库顶部的 **Actions** -> 选中 **Cloudflare IP Auto Scanner & Sync** -> 点击 **Run workflow** 来手动触发一次运行，检查是否正常。
 
+### 2. `CHECK_API_URL` 怎么填（验活接口说明）
+
+本仓库**不内置任何验活接口地址**，代码里没有写死地址，唯一入口就是上面这个 Secret。所以：
+
+- **Fork 本仓库后，必须填你自己的验活接口地址**，不填程序会直接报错停跑（日志里会出现 `Error: CHECK_API_URL is not set ... Aborting.`），这是正常现象，不是程序坏了。
+- **填法**：Secret 名称 `CHECK_API_URL`，值填你自己的验活接口完整地址，以 `/check` 结尾即可，例如 `https://your-check-host/check`。**不要带 `?proxyip=` 参数**，脚本运行时会自动拼接（万一误带了，脚本也会自动去掉，不影响使用）。
+- **接口协议要求**（你自己的接口需满足这个格式，脚本才认）：
+
+  - 请求：`GET {CHECK_API_URL}?proxyip=<要测的IP>`
+  - 返回 JSON 示例：
+
+    ```json
+    {"success": true, "dataCenter": "SJC", "latencyMs": 19}
+    ```
+
+  - 字段说明：`success` 必须为 `true` 才算这个 IP 可用；`dataCenter`（或 `colo`）是机场三字码（如 `SJC`、`LAX`），脚本靠它筛选地区；`latencyMs`（或 `tcpDuration`）是延迟毫秒数，可选，不返回时脚本用整个请求的耗时代替。
+- **先自测再填**：在浏览器里打开 `https://your-check-host/check?proxyip=1.1.1.1`，能返回带 `success` 字段的 JSON，就说明接口格式对，可以填进 Secret。
+- **和另外 4 个 Secret 的区别**：`CF_EMAIL` / `CF_API_TOKEN` / `CF_ZONE_ID` / `CF_TARGET_DOMAIN` 不填只是跳过 DNS 同步、扫描照常进行；只有 `CHECK_API_URL` 是硬性必填，不填不扫。
+
 ---
 
 ## ⚙️ 高级自定义设置
@@ -61,7 +80,7 @@ ALL_MODE_LIMIT = 10
 ```
 - **精准筛选模式**：填入你想要的机场码（如 `SJC,LAX,HKG`），系统会严格执行筛选标准，并**自动分配同步到各自的子域名**（如 `sjc.你的主域名`）。
 - **盲扫模式 (ALL)**：直接填 `"ALL"`！系统会在全网疯狂盲扫，只要凑够设定的数量（`ALL_MODE_LIMIT`，默认10个）瞬间光速收网！**在此模式下，扫到的 IP 只会全部统一同步到 `CF_TARGET_DOMAIN` 设置的主域名，不会自动创建地区子域名。**
-- **免配置测速模式**：如果你只是想体验极致的测速快感，或者没有 Cloudflare 域名。没关系！**不配置环境变量也可以直接运行！** 程序会自动跳过 DNS 同步。
+- **免配置测速模式**：如果你只是想体验测速、或者没有 Cloudflare 域名，可以只填 `CHECK_API_URL` 这一个 Secret，不填那 4 个 Cloudflare 的 Secret 也能运行，程序会自动跳过 DNS 同步、只输出扫描结果。注意 `CHECK_API_URL` 本身是必填的（见上方第 2 节），不填会直接停跑。
 
 ### ⚡ 4. 扫描逻辑与同步数量设置 (全在 Python 里设置)
 打开 `scripts/cf_scanner_sync.py`，你会在刚刚那个全局设置的下方看到这两个参数：
