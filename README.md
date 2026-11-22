@@ -38,6 +38,19 @@
 
   - 字段说明：`success` 必须为 `true` 才算这个 IP 可用；`dataCenter`（或 `colo`）是机场三字码（如 `SJC`、`LAX`），脚本靠它筛选地区；`latencyMs`（或 `tcpDuration`）是延迟毫秒数，可选，不返回时脚本用整个请求的耗时代替。
 - **先自测再填**：在浏览器里打开 `https://<你的域名>/check?proxyip=1.1.1.1`，能返回带 `success` 字段的 JSON，就说明接口格式对，把这个域名填进 Secret 即可。
+
+### 3. 没有自己的验活接口？先搭一个（接口搭建代码）
+
+验活接口的搭建代码是现成的，在这个仓库里：**https://github.com/onlyoyrao999/Cloudflare-proxyAPI**
+
+- 仓库里有两个版本：根目录 `_worker.js` 是基础版（`/check` 只返回国家级粗分）；`精准分区用这个.js` 是精准版（内置全球 237 个机房字典，`/check` 返回 `dataCenter`，能精确到 `SJC`、`LAX` 这种机房码）。**本扫描器要按地区筛 IP，用精准版**：部署前把 `精准分区用这个.js` 的内容替换根目录 `_worker.js` 即可。
+- **部署步骤**（Cloudflare Pages）：
+  1. 打开 Cloudflare 控制台 -> **Workers & Pages** -> **Create** -> **Pages**，选 **Connect to Git** 连上 `Cloudflare-proxyAPI` 仓库（或用 Upload 直接上传该仓库文件），分支 `main`、构建命令和输出目录都留空。
+  2. 部署完成后你会得到一个 `xxx.pages.dev` 域名，这就是你自己的验活接口域名。
+  3. 自测：浏览器打开 `https://<你的域名>/check?proxyip=1.1.1.1`，返回带 `success` 和 `dataCenter` 的 JSON 就说明搭好了。
+  4. 回到本仓库，按上一节把这个**域名**填进 Secret `CHECK_API_URL`（只填域名），完事。
+- **注意**：接口必须部署在 **Pages / Workers** 上，**不要部署到 Snippets**——Snippets 环境禁用了 TCP `connect()`，接口会回 502（`connect() is not available in Snippets`）、所有 IP 都验不了活。另外 `/check` 只测纯 IP，正好对上本扫描器（脚本喂进去的都是纯 IP）。
+
 - **和另外 4 个 Secret 的区别**：`CF_EMAIL` / `CF_API_TOKEN` / `CF_ZONE_ID` / `CF_TARGET_DOMAIN` 不填只是跳过 DNS 同步、扫描照常进行；只有 `CHECK_API_URL` 是硬性必填，不填不扫。
 
 ---
