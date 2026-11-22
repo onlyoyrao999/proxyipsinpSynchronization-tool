@@ -53,7 +53,10 @@ def test_ip(ip, check_api_url, timeout=5.0):
     return None
 
 def main():
-    check_api_url = "https://cloudflarenb-pagesip.pages.dev/check"
+    check_api_url = os.environ.get("CHECK_API_URL", "").strip().removesuffix("?proxyip=").removesuffix("?proxyip").rstrip("?&")
+    if not check_api_url:
+        print("Error: CHECK_API_URL is not set (configure it in repository Secrets). Aborting.")
+        exit(1)
     cidrs = load_cf_cidrs("ip.txt")
     if not cidrs:
         print("No CIDRs found in ip.txt")

@@ -9,7 +9,7 @@
 
 ### 1. 配置 GitHub Secrets (必须)
 要想让脚本正常运行，你需要进入你的 GitHub 仓库：
-点击右上角的 **Settings** -> **Secrets and variables** -> **Actions** -> **New repository secret**，依次添加以下 4 个环境变量：
+点击右上角的 **Settings** -> **Secrets and variables** -> **Actions** -> **New repository secret**，依次添加以下 5 个环境变量：
 
 | Secret 名称 | 说明 | 示例 |
 | --- | --- | --- |
@@ -17,6 +17,7 @@
 | `CF_API_TOKEN` | Cloudflare 的 Global API Key (全局 API 密钥) | `8a9b...` |
 | `CF_ZONE_ID` | 你域名的 区域 ID (在 CF 域名概述页面右下角，32位字符串) | `9841...` |
 | `CF_TARGET_DOMAIN` | 你的主域名（程序不仅会将所有神仙 IP 同步到主域名，还会根据地区自动拼接子域名，如 `sjc.yourdomain.com`） | `yourdomain.com` |
+| `CHECK_API_URL` | 验活接口地址（只存 Secrets，不写进代码） | `https://your-check-host/check` |
 
 配置好后，你可以点击仓库顶部的 **Actions** -> 选中 **Cloudflare IP Auto Scanner & Sync** -> 点击 **Run workflow** 来手动触发一次运行，检查是否正常。
 

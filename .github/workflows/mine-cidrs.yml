@@ -26,6 +26,8 @@ jobs:
         pip install requests
 
     - name: Run CIDR Miner
+      env:
+        CHECK_API_URL: ${{ secrets.CHECK_API_URL }}
       run: python scripts/mine_hot_cidrs.py
 
     - name: Commit and Push Subnets
